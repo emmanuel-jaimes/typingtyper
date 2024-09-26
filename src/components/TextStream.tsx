@@ -108,7 +108,7 @@ const TextStream: React.FC<Props> = ({ textToType }) => {
           background-color: #90EE90;
         }
         .incorrect {
-          color: red;
+          background-color: #FFCCCB;
         }
         .accuracy {
           margin-top: 10px;
