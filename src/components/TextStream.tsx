@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import "./TextStreamFromGist";
 
 interface Props {
@@ -7,17 +7,19 @@ interface Props {
 
 const TextStream: React.FC<Props> = ({ textToType }) => {
   const [userInput, setUserInput] = useState("");
+  const [wpm, setWpm] = useState<number | null>(null);
+  const [cpm, setCpm] = useState<number | null>(null);
   const [accuracy, setAccuracy] = useState(100);
-  const [wpm, setWpm] = useState(0);
-  const [cpm, setCpm] = useState(10);
+  const [timeLeft, setTimeLeft] = useState(60);
+  const [isTestActive, setTestActive] = useState<boolean>(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [correctCharacters, setCorrectCharacters] = useState<number>(0);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!isTestActive) return; //input only when active
     const userInputValue = e.target.value;
     setUserInput(userInputValue);
     calculateAccuracy(userInputValue);
-    calculateWpm(userInputValue);
-    calculateCpm(userInputValue);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -27,6 +29,9 @@ const TextStream: React.FC<Props> = ({ textToType }) => {
   };
 
   const handleTextClick = () => {
+    if (!isTestActive) {
+      startTest();
+    }
     inputRef.current?.focus();
   };
 
@@ -40,25 +45,41 @@ const TextStream: React.FC<Props> = ({ textToType }) => {
     const accuracyPercentage =
       (correctCharacters / userInputValue.length) * 100;
     setAccuracy(isNaN(accuracyPercentage) ? 100 : accuracyPercentage);
+    setCorrectCharacters(correctCharacters);
   };
 
-  //calculate words per minute
-  const calculateWpm = (userInputValue: string) => {
-    const timeElapsed = new Date().getTime() - new Date(textToType).getTime();
-    const timeInMinutes = timeElapsed / 60000;
-    const wordsTyped = userInputValue.split(" ").length;
-    const wpm = wordsTyped / timeInMinutes;
-    setWpm(isNaN(wpm) ? 0 : wpm);
+  const calculateWpmAndCpm = () => {
+    const totalCharactersTyped = userInput.length;
+    const totalWordsTyped = correctCharacters / 5; // ~: 1 word = 5 characters
+
+    const wpmResult = totalWordsTyped;
+    const cpmResult = totalCharactersTyped;
+
+    setWpm(wpmResult);
+    setCpm(cpmResult);
   };
 
-  //calculate characters per minute
-  const calculateCpm = (userInputValue: string) => {
-    const timeElapsed = new Date().getTime() - new Date(textToType).getTime();
-    const timeInMinutes = timeElapsed / 60000;
-    const charactersTyped = userInputValue.length;
-    const cpm = charactersTyped / timeInMinutes;
-    setCpm(isNaN(cpm) ? 0 : cpm);
+  const startTest = () => {
+    setTestActive(true);
+    setTimeLeft(60);
   };
+
+  // Timer logic
+  useEffect(() => {
+    if (!isTestActive || timeLeft <= 0) return; // Stop timer when test is not active or reaches 0
+    const timer = setInterval(() => {
+      setTimeLeft((prevTime) => prevTime - 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [isTestActive, timeLeft]);
+
+  // Stop the test when time ends
+  useEffect(() => {
+    if (timeLeft === 0) {
+      setTestActive(false); // Disable input
+      calculateWpmAndCpm();
+    }
+  }, [timeLeft]);
 
   const renderTextWithHighlight = () => {
     return (
@@ -81,7 +102,17 @@ const TextStream: React.FC<Props> = ({ textToType }) => {
 
   return (
     <div className="input-container">
-      <div className="text-to-type" onClick={handleTextClick}>
+      <div
+        className="text-to-type"
+        onClick={handleTextClick}
+        style={{
+          backgroundColor: "white",
+          padding: "2vh",
+          borderRadius: "15px",
+          borderWidth: "3px",
+          borderColor: "#808080",
+        }}
+      >
         {renderTextWithHighlight()}
       </div>
       <input
@@ -90,6 +121,7 @@ const TextStream: React.FC<Props> = ({ textToType }) => {
         value={userInput}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
+        disabled={!isTestActive || timeLeft <= 0}
         style={{
           textAlign: "left",
           padding: "10px 20px",
@@ -100,9 +132,13 @@ const TextStream: React.FC<Props> = ({ textToType }) => {
         autoFocus
       />
       <span className="accuracy">Accuracy: {accuracy.toFixed(2)}%</span>
-      <span className="wpm">WPM: {wpm.toFixed(2)}</span>
-      <span className="cpm">CPM: {cpm.toFixed(2)}</span>
-
+      <div className="timer">Time Left: {timeLeft} seconds</div>
+      {!isTestActive && timeLeft === 0 && (
+        <div className="Results">
+          <div>WPM: {wpm?.toFixed(2)}</div>
+          <div>CPM: {cpm?.toFixed(2)}</div>
+        </div>
+      )}
       <style>{`
         .correct {
           background-color: #90EE90;
@@ -113,6 +149,16 @@ const TextStream: React.FC<Props> = ({ textToType }) => {
         .accuracy {
           margin-top: 10px;
           display: block;
+        }
+        .timer {
+          margin-top: 10px;
+          font-size: 18px;
+          font-weight: bold;
+        }
+        .results {
+          margin-top: 20px;
+          font-size: 20px;
+          font-weight: bold;
         }
       `}</style>
     </div>

@@ -10,7 +10,22 @@ function App() {
   };
 
   return (
-    <div style={{ alignContent: "center", padding: "50px" }}>
+    <div
+      style={{
+        alignContent: "center",
+        padding: "50px",
+        backgroundColor: "lightgray",
+      }}
+    >
+      <div
+        style={{
+          display: "grid",
+          textAlign: "center",
+        }}
+      >
+        <h1>Typing Typer</h1>
+        <p>Typing Test</p>
+      </div>
       <TextStreamFromGist onLoadText={handleGistTextLoad}></TextStreamFromGist>
       {textFromGist && <TextStream textToType={textFromGist}></TextStream>}
     </div>
