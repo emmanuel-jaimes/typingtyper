@@ -14,18 +14,21 @@ const TextStream: React.FC<Props> = ({ textToType }) => {
   const [isTestActive, setTestActive] = useState<boolean>(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const [correctCharacters, setCorrectCharacters] = useState<number>(0);
+  const textRef = useRef<HTMLDivElement>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!isTestActive) return; //input only when active
     const userInputValue = e.target.value;
     setUserInput(userInputValue);
     calculateAccuracy(userInputValue);
+    scrollText(userInputValue.length);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Backspace") {
       e.preventDefault(); //prevent backspace
     }
+    inputRef.current?.focus();
   };
 
   const handleTextClick = () => {
@@ -46,6 +49,12 @@ const TextStream: React.FC<Props> = ({ textToType }) => {
       (correctCharacters / userInputValue.length) * 100;
     setAccuracy(isNaN(accuracyPercentage) ? 100 : accuracyPercentage);
     setCorrectCharacters(correctCharacters);
+
+    if (userInputValue.length / textToType.length > 0.1) {
+      if (textRef.current) {
+        textRef.current.style.transform = "translateY(-50px)";
+      }
+    }
   };
 
   const calculateWpmAndCpm = () => {
@@ -83,7 +92,7 @@ const TextStream: React.FC<Props> = ({ textToType }) => {
 
   const renderTextWithHighlight = () => {
     return (
-      <div>
+      <div ref={textRef} className="text-container">
         {textToType.split("").map((char, index) => {
           let charClass = "";
           if (index < userInput.length) {
@@ -98,6 +107,19 @@ const TextStream: React.FC<Props> = ({ textToType }) => {
         })}
       </div>
     );
+  };
+
+  const scrollText = (typedLength: number) => {
+    if (textRef.current) {
+      const totalLength = textToType.length;
+      const progress = typedLength / totalLength;
+
+      // Scroll every 10% of the text typed
+      const scrollStep = Math.floor(progress * 10); // Integer value, changes every 10%
+      const scrollPercentage = scrollStep / 10;
+      const scrollAmount = scrollPercentage * textRef.current.scrollHeight;
+      textRef.current.style.transform = `translateY(-${scrollAmount}px)`;
+    }
   };
 
   return (
@@ -140,6 +162,27 @@ const TextStream: React.FC<Props> = ({ textToType }) => {
         </div>
       )}
       <style>{`
+
+        html, body {
+            height: 100%,
+            padding: 0;
+            margin: 0;
+            background-color: #F5F5F5;
+        }
+        .input-container {
+            max-height: 600px;
+        }
+        .text-container{
+            font-size: 20px;
+            letter-spacing: 1px;
+            line-height: 1.5;
+            // max-height: 500px;
+            overflow-y: hidden;
+            border-color: black;
+            transition: transform 0.3s ease-in-out;
+            white-space: prewrap;
+        }
+
         .correct {
           background-color: #90EE90;
         }

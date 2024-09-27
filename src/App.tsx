@@ -14,7 +14,6 @@ function App() {
       style={{
         alignContent: "center",
         padding: "50px",
-        backgroundColor: "lightgray",
       }}
     >
       <div
