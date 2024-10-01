@@ -11,28 +11,32 @@ const TextStream: React.FC<Props> = ({ textToType }) => {
   const [cpm, setCpm] = useState<number | null>(null);
   const [accuracy, setAccuracy] = useState(100);
   const [timeLeft, setTimeLeft] = useState(60);
+  const [isTestStarted, setTestStarted] = useState<boolean>(false);
   const [isTestActive, setTestActive] = useState<boolean>(false);
-  const inputRef = useRef<HTMLInputElement>(null);
   const [correctCharacters, setCorrectCharacters] = useState<number>(0);
+  const inputRef = useRef<HTMLInputElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
+  const charactersPerLine = 115;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!isTestActive) return; //input only when active
     const userInputValue = e.target.value;
-    setUserInput(userInputValue);
-    calculateAccuracy(userInputValue);
-    scrollText(userInputValue.length);
+
+    if (isTestActive) {
+      setUserInput(userInputValue);
+      calculateAccuracy(userInputValue);
+      scrollText(userInputValue.length);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Backspace") {
-      e.preventDefault(); //prevent backspace
+      e.preventDefault(); // prevent backspace
     }
     inputRef.current?.focus();
   };
 
   const handleTextClick = () => {
-    if (!isTestActive) {
+    if (!isTestStarted) {
       startTest();
     }
     inputRef.current?.focus();
@@ -49,12 +53,6 @@ const TextStream: React.FC<Props> = ({ textToType }) => {
       (correctCharacters / userInputValue.length) * 100;
     setAccuracy(isNaN(accuracyPercentage) ? 100 : accuracyPercentage);
     setCorrectCharacters(correctCharacters);
-
-    if (userInputValue.length / textToType.length > 0.1) {
-      if (textRef.current) {
-        textRef.current.style.transform = "translateY(-50px)";
-      }
-    }
   };
 
   const calculateWpmAndCpm = () => {
@@ -69,18 +67,19 @@ const TextStream: React.FC<Props> = ({ textToType }) => {
   };
 
   const startTest = () => {
+    setTestStarted(true);
     setTestActive(true);
     setTimeLeft(60);
   };
 
   // Timer logic
   useEffect(() => {
-    if (!isTestActive || timeLeft <= 0) return; // Stop timer when test is not active or reaches 0
+    if (!isTestStarted || timeLeft <= 0) return; // Stop timer when test is not active or reaches 0
     const timer = setInterval(() => {
       setTimeLeft((prevTime) => prevTime - 1);
     }, 1000);
     return () => clearInterval(timer);
-  }, [isTestActive, timeLeft]);
+  }, [isTestStarted, timeLeft]);
 
   // Stop the test when time ends
   useEffect(() => {
@@ -111,14 +110,12 @@ const TextStream: React.FC<Props> = ({ textToType }) => {
 
   const scrollText = (typedLength: number) => {
     if (textRef.current) {
-      const totalLength = textToType.length;
-      const progress = typedLength / totalLength;
+      // Calculate how many lines have been typed
+      const linesTyped = Math.floor(typedLength / charactersPerLine);
 
-      // Scroll every 10% of the text typed
-      const scrollStep = Math.floor(progress * 10); // Integer value, changes every 10%
-      const scrollPercentage = scrollStep / 10;
-      const scrollAmount = scrollPercentage * textRef.current.scrollHeight;
-      textRef.current.style.transform = `translateY(-${scrollAmount}px)`;
+      // Move the text up by one line when enough characters have been typed to complete a line
+      const scrollAmount = linesTyped * 2.5; // Adjust based on line-height
+      textRef.current.style.transform = `translateY(-${scrollAmount}em)`;
     }
   };
 
@@ -128,11 +125,13 @@ const TextStream: React.FC<Props> = ({ textToType }) => {
         className="text-to-type"
         onClick={handleTextClick}
         style={{
-          backgroundColor: "white",
+          backgroundColor: isTestActive ? "white" : "transparent",
           padding: "2vh",
           borderRadius: "15px",
           borderWidth: "3px",
           borderColor: "#808080",
+          overflow: "hidden",
+          maxHeight: "15em",
         }}
       >
         {renderTextWithHighlight()}
@@ -145,9 +144,9 @@ const TextStream: React.FC<Props> = ({ textToType }) => {
         onKeyDown={handleKeyDown}
         disabled={!isTestActive || timeLeft <= 0}
         style={{
-          textAlign: "left",
+          textAlign: "center",
           padding: "10px 20px",
-          caretColor: "transparent",
+          caretColor: "black",
           width: "0%",
           opacity: "0",
         }}
@@ -164,7 +163,7 @@ const TextStream: React.FC<Props> = ({ textToType }) => {
       <style>{`
 
         html, body {
-            height: 100%,
+            height: 100%;
             padding: 0;
             margin: 0;
             background-color: #F5F5F5;
@@ -172,15 +171,13 @@ const TextStream: React.FC<Props> = ({ textToType }) => {
         .input-container {
             max-height: 600px;
         }
-        .text-container{
+        .text-container {
             font-size: 20px;
             letter-spacing: 1px;
-            line-height: 1.5;
-            // max-height: 500px;
-            overflow-y: hidden;
-            border-color: black;
+            line-height: 2.5;
             transition: transform 0.3s ease-in-out;
-            white-space: prewrap;
+            white-space: pre-wrap;
+            overflow: hidden; /* Hide the text that is scrolled out of view */
         }
 
         .correct {
