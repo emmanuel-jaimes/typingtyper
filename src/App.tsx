@@ -1,13 +1,20 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import TextStream from "./components/TextStream";
 import TextStreamFromGist from "./components/TextStreamFromGist";
 
 function App() {
   const [textFromGist, setTextFromGist] = useState("");
+  const textStreamRef = useRef<HTMLInputElement | null>(null);
 
   const handleGistTextLoad = (text: string) => {
     setTextFromGist(text);
   };
+
+  useEffect(() => {
+    if (textFromGist && textStreamRef.current) {
+      textStreamRef.current.focus();
+    }
+  }, [textFromGist]);
 
   return (
     <div
@@ -26,7 +33,9 @@ function App() {
         <p>Typing Test</p>
       </div>
       <TextStreamFromGist onLoadText={handleGistTextLoad}></TextStreamFromGist>
-      {textFromGist && <TextStream textToType={textFromGist}></TextStream>}
+      {textFromGist && (
+        <TextStream ref={textStreamRef} textToType={textFromGist}></TextStream>
+      )}
     </div>
   );
 }
