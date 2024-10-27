@@ -13,6 +13,7 @@ function App() {
   useEffect(() => {
     if (textFromGist && textStreamRef.current) {
       textStreamRef.current.focus();
+      textStreamRef.current.startTest();
     }
   }, [textFromGist]);
 

@@ -1,4 +1,10 @@
-import React, { useRef, useState, useEffect, forwardRef } from "react";
+import React, {
+  useRef,
+  useState,
+  useEffect,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
 import "./TextStreamFromGist";
 
 interface Props {
@@ -19,6 +25,18 @@ const TextStream = forwardRef<HTMLInputElement, Props>(
     const textRef = useRef<HTMLDivElement>(null);
     const charactersPerLine = 115;
 
+    useImperativeHandle(ref, () => ({
+      focus() {
+        inputRef.current?.focus();
+      },
+      startTest() {
+        if (!isTestStarted) {
+          // setTestStarted(true);
+          setTestActive(true);
+        }
+      },
+    }));
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const userInputValue = e.target.value;
 
@@ -26,6 +44,9 @@ const TextStream = forwardRef<HTMLInputElement, Props>(
         setUserInput(userInputValue);
         calculateAccuracy(userInputValue);
         scrollText(userInputValue.length);
+      }
+      if (!isTestActive) {
+        setTestStarted(true);
       }
     };
 
