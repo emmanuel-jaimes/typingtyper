@@ -18,12 +18,12 @@ const TextStream = forwardRef<HTMLInputElement, Props>(
     const [cpm, setCpm] = useState<number | null>(null);
     const [accuracy, setAccuracy] = useState(100);
     const [timeLeft, setTimeLeft] = useState(60);
+    const [charactersPerLine, setCharactersPerLine] = useState(115);
     const [isTestStarted, setTestStarted] = useState<boolean>(false);
     const [isTestActive, setTestActive] = useState<boolean>(false);
     const [correctCharacters, setCorrectCharacters] = useState<number>(0);
     const inputRef = useRef<HTMLInputElement>(null);
     const textRef = useRef<HTMLDivElement>(null);
-    const charactersPerLine = 115;
 
     useImperativeHandle(ref, () => ({
       focus() {
@@ -36,6 +36,20 @@ const TextStream = forwardRef<HTMLInputElement, Props>(
         }
       },
     }));
+
+    useEffect(() => {
+      const updateCharactersPerLine = () => {
+        const screenWidth = window.innerWidth;
+        const estimateCharactersPerLine = Math.floor(screenWidth / 10); // Adjust divisor for more accuracy
+        setCharactersPerLine(estimateCharactersPerLine);
+      };
+
+      updateCharactersPerLine();
+      window.addEventListener("resize", updateCharactersPerLine);
+
+      return () =>
+        window.removeEventListener("resize", updateCharactersPerLine);
+    }, []);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const userInputValue = e.target.value;
