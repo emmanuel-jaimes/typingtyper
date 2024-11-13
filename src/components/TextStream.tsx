@@ -6,6 +6,8 @@ import React, {
   useImperativeHandle,
 } from "react";
 import "./TextStreamFromGist";
+import Button from "./Button";
+import Alert from "./Alert";
 
 interface Props {
   textToType: string; // The text to be typed by the user
@@ -25,55 +27,45 @@ const TextStream = forwardRef<HTMLInputElement, Props>(
     const inputRef = useRef<HTMLInputElement>(null);
     const textRef = useRef<HTMLDivElement>(null);
 
-    useImperativeHandle(ref, () => ({
-      focus() {
-        inputRef.current?.focus();
-      },
-      startTest() {
-        if (!isTestStarted) {
-          // setTestStarted(true);
-          setTestActive(true);
-        }
-      },
-    }));
-
-    useEffect(() => {
-      const updateCharactersPerLine = () => {
-        const screenWidth = window.innerWidth;
-        const estimateCharactersPerLine = Math.floor(screenWidth / 10); // Adjust divisor for more accuracy
-        setCharactersPerLine(estimateCharactersPerLine);
-      };
-
-      updateCharactersPerLine();
-      window.addEventListener("resize", updateCharactersPerLine);
-
-      return () =>
-        window.removeEventListener("resize", updateCharactersPerLine);
-    }, []);
+    // useImperativeHandle(ref, () => ({
+    //   focus() {
+    //     inputRef.current?.focus();
+    //   },
+    //   startTest() {
+    //     if (!isTestActive) {
+    //       setTestActive(true);
+    //     }
+    //   },
+    // }));
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const userInputValue = e.target.value;
 
-      if (isTestActive) {
-        setUserInput(userInputValue);
-        calculateAccuracy(userInputValue);
-        scrollText(userInputValue.length);
+      if (!isTestStarted && isTestActive) {
+        startTest();
       }
       if (!isTestActive) {
-        setTestStarted(true);
+        setTestActive(true);
       }
+
+      setUserInput(userInputValue);
+      calculateAccuracy(userInputValue);
+      scrollText(userInputValue.length);
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (e.key === "Backspace") {
         e.preventDefault(); // prevent backspace
       }
+      if (isTestActive && !isTestStarted) {
+        startTest();
+      }
       inputRef.current?.focus();
     };
 
     const handleTextClick = () => {
-      if (!isTestStarted) {
-        startTest();
+      if (!isTestActive) {
+        setTestActive(true);
       }
       inputRef.current?.focus();
     };
@@ -104,8 +96,8 @@ const TextStream = forwardRef<HTMLInputElement, Props>(
 
     const startTest = () => {
       setTestStarted(true);
-      setTestActive(true);
       setTimeLeft(60);
+      inputRef.current?.focus();
     };
 
     // Timer logic
@@ -127,7 +119,7 @@ const TextStream = forwardRef<HTMLInputElement, Props>(
 
     const renderTextWithHighlight = () => {
       return (
-        <div ref={textRef} className="text-container">
+        <div ref={textRef} className="stream-container">
           {textToType.split("").map((char, index) => {
             let charClass = "";
             if (index < userInput.length) {
@@ -148,33 +140,58 @@ const TextStream = forwardRef<HTMLInputElement, Props>(
 
     const scrollText = (typedLength: number) => {
       if (textRef.current) {
-        // Calculate how many lines have been typed
-        const linesTyped = Math.floor(typedLength / charactersPerLine);
-
         // Move the text up by one line when enough characters have been typed to complete a line
-        const scrollAmount = linesTyped * 2.5; // Adjust based on line-height
-        textRef.current.style.transform = `translateY(-${scrollAmount}em)`;
+        const scrollAmount = typedLength * 16.65; // Adjust based on line-height
+        textRef.current.style.transform = `translateX(-${scrollAmount}px)`;
       }
     };
 
     return (
       <div className="input-container">
+        <div className="results-container">
+          <Button
+            children={"Time left"}
+            value={timeLeft}
+            color="warning"
+          ></Button>
+          <Button children="Accuracy" value={accuracy.toFixed(0)}></Button>
+
+          {!isTestActive && timeLeft === 0 && (
+            <div className="Results">
+              <Button
+                children={"WPM"}
+                value={wpm?.toFixed(0)}
+                color="success"
+              ></Button>
+              <Button
+                children={"CPM"}
+                value={cpm?.toFixed(0)}
+                color="success"
+              ></Button>
+            </div>
+          )}
+        </div>
         <div
           className="text-to-type"
           onClick={handleTextClick}
           style={{
             backgroundColor: isTestActive ? "white" : "transparent",
             padding: "2vh",
+            marginTop: "30px",
             borderRadius: "15px",
             borderWidth: "3px",
-            borderColor: "#808080",
             overflow: "hidden",
             maxHeight: "15em",
+            justifyContent: "start",
+            fontFamily: "monospace",
+            fontSize: "xx-large",
+            letterSpacing: "1px",
           }}
         >
           {renderTextWithHighlight()}
         </div>
         <input
+          className="stream-container"
           type="text"
           ref={inputRef}
           value={userInput}
@@ -183,39 +200,60 @@ const TextStream = forwardRef<HTMLInputElement, Props>(
           disabled={!isTestActive || timeLeft <= 0}
           style={{
             textAlign: "center",
-            padding: "10px 20px",
+            padding: "10px 50%",
             caretColor: "black",
             width: "0%",
-            opacity: "0",
+            opacity: "100",
+            textWrap: "nowrap",
+            whiteSpace: "nowrap",
+            backgroundColor: "transparent",
+            position: "fixed",
+            left: "-10000px",
           }}
           autoFocus
         />
-        <span className="accuracy">Accuracy: {accuracy.toFixed(2)}%</span>
-        <div className="timer">Time Left: {timeLeft} seconds</div>
-        {!isTestActive && timeLeft === 0 && (
-          <div className="Results">
-            <div>WPM: {wpm?.toFixed(2)}</div>
-            <div>CPM: {cpm?.toFixed(2)}</div>
-          </div>
-        )}
-        <style>{`
 
+        <style>{`
         html, body {
             height: 100%;
             padding: 0;
             margin: 0;
             background-color: #F5F5F5;
         }
+        .results-container {
+          padding-top: 120px;
+          justify-content: center;
+          display: flex;
+        }
         .input-container {
-            max-height: 600px;
+            max-height: 10px;
+            border: black;
+            justify-content: center;
+            align-items: center;
+        }
+        .stream-container{
+            text-align: center;
+            padding: 10px 50%;
+            width: 0%;
+            caret-color: black;
+            white-space: nowrap;
+            background-color: transparent;
+            border: none;
+        }
+        .text-to-type {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-wrap: nowrap;
+            height: 5em;
         }
         .text-container {
             font-size: 20px;
             letter-spacing: 1px;
             line-height: 2.5;
             transition: transform 0.3s ease-in-out;
-            white-space: pre-wrap;
-            overflow: hidden; /* Hide the text that is scrolled out of view */
+            white-space: nowrap;
+            overflow: hidden; 
         }
 
         .correct {

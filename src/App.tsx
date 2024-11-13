@@ -13,7 +13,6 @@ function App() {
   useEffect(() => {
     if (textFromGist && textStreamRef.current) {
       textStreamRef.current.focus();
-      textStreamRef.current.startTest();
     }
   }, [textFromGist]);
 
@@ -21,7 +20,8 @@ function App() {
     <div
       style={{
         alignContent: "center",
-        padding: "50px",
+        padding: "30px",
+        fontFamily: "monospace",
       }}
     >
       <div

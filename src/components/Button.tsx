@@ -2,14 +2,19 @@ import React from "react";
 
 interface Props {
   children: string;
+  value: number | string | null | undefined;
   color?: string;
-  onClick: () => void;
+  // onClick: () => void;
 }
 
-const Button = ({ children, color = "primary", onClick }: Props) => {
+const Button = ({ children, value, color = "primary" }: Props) => {
   return (
-    <button className={"btn btn-" + color} onClick={onClick}>
+    <button
+      className={"m-1 p-5 btn btn-" + color}
+      style={{ borderRadius: "9999px", minWidth: "180px" }}
+    >
       {children}
+      <h1>{value}</h1>
     </button>
   );
 };
