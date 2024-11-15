@@ -20,33 +20,33 @@ const TextStream = forwardRef<HTMLInputElement, Props>(
     const [cpm, setCpm] = useState<number | null>(null);
     const [accuracy, setAccuracy] = useState(100);
     const [timeLeft, setTimeLeft] = useState(60);
-    const [charactersPerLine, setCharactersPerLine] = useState(115);
     const [isTestStarted, setTestStarted] = useState<boolean>(false);
-    const [isTestActive, setTestActive] = useState<boolean>(false);
+    // const [isTestActive, setTestActive] = useState<boolean>(false);
+    const [isTestDone, setTestDone] = useState<boolean>(false);
     const [correctCharacters, setCorrectCharacters] = useState<number>(0);
     const inputRef = useRef<HTMLInputElement>(null);
     const textRef = useRef<HTMLDivElement>(null);
 
-    // useImperativeHandle(ref, () => ({
-    //   focus() {
-    //     inputRef.current?.focus();
-    //   },
-    //   startTest() {
-    //     if (!isTestActive) {
-    //       setTestActive(true);
-    //     }
-    //   },
-    // }));
+    useImperativeHandle(ref, () => ({
+      focus() {
+        inputRef.current?.focus();
+      },
+      startTest() {
+        if (!isTestActive) {
+          setTestActive(true);
+        }
+      },
+    }));
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const userInputValue = e.target.value;
 
-      if (!isTestStarted && isTestActive) {
+      if (!isTestStarted) {
         startTest();
       }
-      if (!isTestActive) {
-        setTestActive(true);
-      }
+      // if (!isTestActive) {
+      //   setTestActive(true);
+      // }
 
       setUserInput(userInputValue);
       calculateAccuracy(userInputValue);
@@ -57,16 +57,16 @@ const TextStream = forwardRef<HTMLInputElement, Props>(
       if (e.key === "Backspace") {
         e.preventDefault(); // prevent backspace
       }
-      if (isTestActive && !isTestStarted) {
+      if (!isTestStarted) {
         startTest();
       }
       inputRef.current?.focus();
     };
 
     const handleTextClick = () => {
-      if (!isTestActive) {
-        setTestActive(true);
-      }
+      // if (!isTestActive) {
+      //   setTestActive(true);
+      // }
       inputRef.current?.focus();
     };
 
@@ -112,7 +112,8 @@ const TextStream = forwardRef<HTMLInputElement, Props>(
     // Stop the test when time ends
     useEffect(() => {
       if (timeLeft === 0) {
-        setTestActive(false); // Disable input
+        // setTestActive(false); // Disable input
+        setTestDone(true);
         calculateWpmAndCpm();
       }
     }, [timeLeft]);
@@ -140,23 +141,38 @@ const TextStream = forwardRef<HTMLInputElement, Props>(
 
     const scrollText = (typedLength: number) => {
       if (textRef.current) {
-        // Move the text up by one line when enough characters have been typed to complete a line
-        const scrollAmount = typedLength * 16.65; // Adjust based on line-height
+        const scrollAmount = typedLength * 16.65; // char width = 16.65px
         textRef.current.style.transform = `translateX(-${scrollAmount}px)`;
       }
     };
 
+    const buttonWidthPercentage = (timeLeft / 60) * 100;
+
     return (
       <div className="input-container">
         <div className="results-container">
-          <Button
-            children={"Time left"}
-            value={timeLeft}
-            color="warning"
-          ></Button>
+          <div className="m-1 draining-button">
+            <div
+              className="drain-fill"
+              style={{ height: `${buttonWidthPercentage}%` }}
+            ></div>
+            <span className="timer-text">
+              {/* {`Time`} */}
+              <h1
+                style={{
+                  justifyContent: "center",
+                  display: "flex",
+                  alignItems: "center",
+                  margin: "20px",
+                }}
+              >
+                {timeLeft}s
+              </h1>
+            </span>
+          </div>
           <Button children="Accuracy" value={accuracy.toFixed(0)}></Button>
 
-          {!isTestActive && timeLeft === 0 && (
+          {isTestDone && (
             <div className="Results">
               <Button
                 children={"WPM"}
@@ -175,7 +191,7 @@ const TextStream = forwardRef<HTMLInputElement, Props>(
           className="text-to-type"
           onClick={handleTextClick}
           style={{
-            backgroundColor: isTestActive ? "white" : "transparent",
+            backgroundColor: isTestDone ? "transparent" : "white",
             padding: "2vh",
             marginTop: "30px",
             borderRadius: "15px",
@@ -197,7 +213,7 @@ const TextStream = forwardRef<HTMLInputElement, Props>(
           value={userInput}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
-          disabled={!isTestActive || timeLeft <= 0}
+          disabled={isTestDone}
           style={{
             textAlign: "center",
             padding: "10px 50%",
@@ -217,8 +233,10 @@ const TextStream = forwardRef<HTMLInputElement, Props>(
         html, body {
             height: 100%;
             padding: 0;
+            padding-left: 5%;
+            padding-right: 5%;
             margin: 0;
-            background-color: #F5F5F5;
+            background-color: #31393c;
         }
         .results-container {
           padding-top: 120px;
@@ -274,6 +292,31 @@ const TextStream = forwardRef<HTMLInputElement, Props>(
         .results {
           margin-top: 20px;
           font-size: 20px;
+          font-weight: bold;
+        }
+        .draining-button {
+          position: relative;
+          width: 180px;
+          height: 178px;
+          background-color: lightgray;
+          border-radius: 9999px;
+          overflow: hidden;
+          margin-top: 10px;
+        }
+        .drain-fill {
+          width: 100%;
+          background-color: #4CAF50;
+          transition: height 1s linear;
+          position: absolute;
+          bottom: 0;
+          align-items: center;
+        }
+        .timer-text {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          color: white;
           font-weight: bold;
         }
       `}</style>

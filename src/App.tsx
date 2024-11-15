@@ -22,15 +22,21 @@ function App() {
         alignContent: "center",
         padding: "30px",
         fontFamily: "monospace",
+        backgroundColor: "#31393c",
       }}
     >
       <div
         style={{
           display: "grid",
           textAlign: "center",
+          color: "white",
         }}
       >
-        <h1>Typing Typer</h1>
+        <h1>
+          <i>
+            <b>Typing Typer</b>
+          </i>
+        </h1>
         <p>Typing Test</p>
       </div>
       <TextStreamFromGist onLoadText={handleGistTextLoad}></TextStreamFromGist>
