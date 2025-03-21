@@ -154,7 +154,9 @@ const TextStream = forwardRef<HTMLInputElement, Props>(
           <div className="m-1 draining-button">
             <div
               className="drain-fill"
-              style={{ height: `${buttonWidthPercentage}%` }}
+              style={{
+                height: `${buttonWidthPercentage}%`,
+              }}
             ></div>
             <span className="timer-text">
               {/* {`Time`} */}
@@ -191,7 +193,8 @@ const TextStream = forwardRef<HTMLInputElement, Props>(
           className="text-to-type"
           onClick={handleTextClick}
           style={{
-            backgroundColor: isTestDone ? "transparent" : "white",
+            color: "white",
+            backgroundColor: isTestDone ? "transparent" : "transparent",
             padding: "2vh",
             marginTop: "30px",
             borderRadius: "15px",
@@ -236,7 +239,7 @@ const TextStream = forwardRef<HTMLInputElement, Props>(
             padding-left: 5%;
             padding-right: 5%;
             margin: 0;
-            background-color: #31393c;
+            background-color: #161413;
         }
         .results-container {
           padding-top: 120px;
@@ -298,7 +301,7 @@ const TextStream = forwardRef<HTMLInputElement, Props>(
           position: relative;
           width: 180px;
           height: 178px;
-          background-color: lightgray;
+          background-color: transparent;
           border-radius: 9999px;
           overflow: hidden;
           margin-top: 10px;

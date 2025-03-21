@@ -49,7 +49,7 @@ function App() {
         alignContent: "center",
         padding: "30px",
         fontFamily: "monospace",
-        backgroundColor: "#31393c",
+        backgroundColor: "#161413",
       }}
     >
       <p style={{ color: "white" }}>Login</p>
