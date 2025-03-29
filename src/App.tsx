@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import TextStream from "./components/TextStream";
 import TextStreamFromGist from "./components/TextStreamFromGist";
-import { auth } from "./firebase";
+import { auth, db } from "./firebase";
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  User,
 } from "firebase/auth";
+import { collection, addDoc } from "firebase/firestore";
 
 function App() {
   const [textFromGist, setTextFromGist] = useState("");
@@ -13,9 +15,11 @@ function App() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
   const [setLoginFormVisible, isLoginFormVisible] = useState(false);
   const [isSignUp, setSignUp] = useState(false);
+  // get if test is still active
+  // get performance info
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,6 +58,28 @@ function App() {
 
   const handleGistTextLoad = (text: string) => {
     setTextFromGist(text);
+  };
+
+  const handleTestComplete = async (results: {
+    wpm: any;
+    cpm: any;
+    accuracy: any;
+  }) => {
+    if (user) {
+      try {
+        await addDoc(collection(db, "testResults"), {
+          userId: user.uid,
+          email: user.email,
+          wpm: results.wpm,
+          cpm: results.cpm,
+          accuracy: results.accuracy,
+          timestamp: new Date(),
+        });
+        console.log("Test results saved successfully!");
+      } catch (err) {
+        console.error("Error saving test results: ", err);
+      }
+    }
   };
 
   useEffect(() => {
@@ -145,7 +171,11 @@ function App() {
       </div>
       <TextStreamFromGist onLoadText={handleGistTextLoad} />
       {textFromGist && (
-        <TextStream ref={textStreamRef} textToType={textFromGist} />
+        <TextStream
+          ref={textStreamRef}
+          textToType={textFromGist}
+          onTestComplete={handleTestComplete}
+        />
       )}
     </div>
   );

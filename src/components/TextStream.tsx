@@ -11,10 +11,15 @@ import Alert from "./Alert";
 
 interface Props {
   textToType: string; // The text to be typed by the user
+  onTestComplete: (results: {
+    wpm: number;
+    cpm: number;
+    accuracy: number;
+  }) => void;
 }
 
 const TextStream = forwardRef<HTMLInputElement, Props>(
-  ({ textToType }, ref) => {
+  ({ textToType, onTestComplete }, ref) => {
     const [userInput, setUserInput] = useState("");
     const [wpm, setWpm] = useState<number | null>(null);
     const [cpm, setCpm] = useState<number | null>(null);
@@ -44,9 +49,6 @@ const TextStream = forwardRef<HTMLInputElement, Props>(
       if (!isTestStarted) {
         startTest();
       }
-      // if (!isTestActive) {
-      //   setTestActive(true);
-      // }
 
       setUserInput(userInputValue);
       calculateAccuracy(userInputValue);
@@ -64,9 +66,6 @@ const TextStream = forwardRef<HTMLInputElement, Props>(
     };
 
     const handleTextClick = () => {
-      // if (!isTestActive) {
-      //   setTestActive(true);
-      // }
       inputRef.current?.focus();
     };
 
@@ -112,11 +111,17 @@ const TextStream = forwardRef<HTMLInputElement, Props>(
     // Stop the test when time ends
     useEffect(() => {
       if (timeLeft === 0) {
-        // setTestActive(false); // Disable input
         setTestDone(true);
         calculateWpmAndCpm();
+        onTestComplete({
+          wpm: wpm || 0,
+          cpm: cpm || 0,
+          accuracy: accuracy || 0,
+        });
       }
     }, [timeLeft]);
+
+    // const onTestComplet
 
     const renderTextWithHighlight = () => {
       return (
@@ -329,3 +334,6 @@ const TextStream = forwardRef<HTMLInputElement, Props>(
 );
 
 export default TextStream;
+function setError(arg0: string) {
+  throw new Error("Function not implemented.");
+}
