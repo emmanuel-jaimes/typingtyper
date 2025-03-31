@@ -18,7 +18,12 @@ interface Props {
   }) => void;
 }
 
-const TextStream = forwardRef<HTMLInputElement, Props>(
+export interface TextStreamHandle {
+  focus: () => void;
+  startTest: () => void;
+}
+
+const TextStream = forwardRef<TextStreamHandle, Props>(
   ({ textToType, onTestComplete }, ref) => {
     const [userInput, setUserInput] = useState("");
     const [wpm, setWpm] = useState<number | null>(null);
@@ -37,9 +42,9 @@ const TextStream = forwardRef<HTMLInputElement, Props>(
         inputRef.current?.focus();
       },
       startTest() {
-        if (!isTestActive) {
-          setTestActive(true);
-        }
+        // if (!isTestActive) {
+        //   setTestActive(true);
+        // }
       },
     }));
 

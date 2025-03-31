@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import TextStream from "./components/TextStream";
+import { TextStreamHandle } from "./components/TextStream";
 import TextStreamFromGist from "./components/TextStreamFromGist";
 import { auth, db } from "./firebase";
 import {
@@ -7,11 +8,11 @@ import {
   createUserWithEmailAndPassword,
   User,
 } from "firebase/auth";
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, doc, setDoc } from "firebase/firestore";
 
 function App() {
   const [textFromGist, setTextFromGist] = useState("");
-  const textStreamRef = useRef(null);
+  const textStreamRef = useRef<TextStreamHandle>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -60,25 +61,19 @@ function App() {
     setTextFromGist(text);
   };
 
-  const handleTestComplete = async (results: {
-    wpm: any;
-    cpm: any;
-    accuracy: any;
-  }) => {
-    if (user) {
-      try {
-        await addDoc(collection(db, "testResults"), {
-          userId: user.uid,
-          email: user.email,
-          wpm: results.wpm,
-          cpm: results.cpm,
-          accuracy: results.accuracy,
-          timestamp: new Date(),
-        });
-        console.log("Test results saved successfully!");
-      } catch (err) {
-        console.error("Error saving test results: ", err);
+  const saveTestResult = async () => {
+    try {
+      if (!user) {
+        console.error("User not logged in!");
+        return;
       }
+
+      const testResultRef = doc(collection(db, "testResults"));
+      await setDoc(testResultRef, { userId: user.uid, wpm: 75, accuracy: 95 });
+
+      console.log("Test result saved!");
+    } catch (error) {
+      console.error("Error writing to Firestore:", error);
     }
   };
 
@@ -174,7 +169,7 @@ function App() {
         <TextStream
           ref={textStreamRef}
           textToType={textFromGist}
-          onTestComplete={handleTestComplete}
+          onTestComplete={saveTestResult}
         />
       )}
     </div>
