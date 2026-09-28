@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 
 interface TextStreamFromGistProps {
   onLoadText: (text: string) => void;
@@ -17,9 +17,11 @@ const TextStreamFromGist: React.FC<TextStreamFromGistProps> = ({
 }) => {
   useEffect(() => {
     const fetchGist = async () => {
+      // fetch the gist from github
+      //todo improve by loading only amount what is needed
       try {
         const response = await fetch(
-          "/gist/deekayen/4148741/raw/98d35708fa344717d8eee15d11987de6c8e26d7d/1-1000.txt"
+          "/gist/deekayen/4148741/raw/98d35708fa344717d8eee15d11987de6c8e26d7d/1-1000.txt",
         );
         const text = await response.text();
         const words = text.split(/\s+/);

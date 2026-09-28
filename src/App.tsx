@@ -8,17 +8,18 @@ import {
   createUserWithEmailAndPassword,
   User,
 } from "firebase/auth";
-import { collection, addDoc, doc, setDoc } from "firebase/firestore";
+import { collection, doc, setDoc } from "firebase/firestore";
 
 function App() {
-  const [textFromGist, setTextFromGist] = useState("");
+  const [textFromGist, setTextFromGist] = useState<string>("");
   const textStreamRef = useRef<TextStreamHandle>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [user, setUser] = useState<User | null>(null);
-  const [setLoginFormVisible, isLoginFormVisible] = useState(false);
+  const [isLoginFormVisible, setLoginFormVisible] = useState(false);
   const [isSignUp, setSignUp] = useState(false);
+  const [isSpanish, setSpanish] = useState(false);
   // get if test is still active
   // get performance info
 
@@ -29,7 +30,7 @@ function App() {
       const userCredential = await signInWithEmailAndPassword(
         auth,
         email,
-        password
+        password,
       );
       setUser(userCredential.user);
     } catch (err: any) {
@@ -49,7 +50,7 @@ function App() {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
-        password
+        password,
       );
       setUser(userCredential.user);
     } catch (err: any) {
@@ -103,6 +104,16 @@ function App() {
         style={{ marginBottom: "10px" }}
       >
         Switch to {isSignUp ? "Login" : "Sign Up"}
+      </button>
+
+      {/* Bilingual Selection */}
+      <br />
+      <button
+        onClick={() => setSpanish(!isSpanish)}
+        //todo TRANSLATE PAGE TO SPANISH
+        style={{ marginBottom: "10px" }}
+      >
+        {isSpanish ? "Espanol" : "English"}
       </button>
 
       {user ? (

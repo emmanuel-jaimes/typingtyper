@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/firestore.tsx","./src/login.tsx","./src/message.tsx","./src/firebase.ts","./src/main.tsx","./src/vite-env.d.ts","./src/components/alert.tsx","./src/components/button.tsx","./src/components/listgroup.tsx","./src/components/textstream.tsx","./src/components/textstreamfromgist.tsx"],"version":"5.6.2"}

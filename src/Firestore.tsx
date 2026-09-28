@@ -7,7 +7,7 @@ function Firestore() {
       await addDoc(collection(db, "users"), { name: "John Doe", age: 30 });
       console.log("Document added!");
     } catch (error) {
-      console.error("Error adding document:", error.message);
+      console.error("Error adding document");
     }
   };
 
@@ -18,7 +18,7 @@ function Firestore() {
         console.log(doc.id, " => ", doc.data());
       });
     } catch (error) {
-      console.error("Error fetching data:", error.message);
+      console.error("Error fetching data:");
     }
   };
 

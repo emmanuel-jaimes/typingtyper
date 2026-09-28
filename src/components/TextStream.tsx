@@ -7,7 +7,7 @@ import React, {
 } from "react";
 import "./TextStreamFromGist";
 import Button from "./Button";
-import Alert from "./Alert";
+// import Alert from "./Alert";
 
 interface Props {
   textToType: string; // The text to be typed by the user
@@ -63,6 +63,12 @@ const TextStream = forwardRef<TextStreamHandle, Props>(
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (e.key === "Backspace") {
         e.preventDefault(); // prevent backspace
+      }
+      if (
+        (e.key === "Control" || e.key === "Meta") &&
+        e.key.toLowerCase() === "a"
+      ) {
+        e.preventDefault(); // prevent control and command keys
       }
       if (!isTestStarted) {
         startTest();
@@ -207,7 +213,7 @@ const TextStream = forwardRef<TextStreamHandle, Props>(
             backgroundColor: isTestDone ? "transparent" : "transparent",
             padding: "2vh",
             marginTop: "30px",
-            borderRadius: "15px",
+            borderRadius: "5px",
             borderWidth: "3px",
             overflow: "hidden",
             maxHeight: "15em",
@@ -226,6 +232,7 @@ const TextStream = forwardRef<TextStreamHandle, Props>(
           value={userInput}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
+          tabIndex={0}
           disabled={isTestDone}
           style={{
             textAlign: "center",
@@ -335,10 +342,10 @@ const TextStream = forwardRef<TextStreamHandle, Props>(
       `}</style>
       </div>
     );
-  }
+  },
 );
 
 export default TextStream;
-function setError(arg0: string) {
-  throw new Error("Function not implemented.");
-}
+// function setError(arg0: string) {
+//   throw new Error("Function not implemented.");
+// }
